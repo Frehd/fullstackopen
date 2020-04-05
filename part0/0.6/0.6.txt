@@ -1,0 +1,9 @@
+note over browser:
+user clicks save after entering note
+the browser adds the new note to the DOM tree and renders it
+the note is sent with a HTTP POST request
+end note
+
+browser->server: HTTP POST https://fullstack-exampleapp.herokuapp.com/new_note
+
+server-->browser: Status Code: 201 Response: {"message":"note created"}
