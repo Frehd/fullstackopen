@@ -14,10 +14,10 @@ const App = () => {
 
   const stateFunctions = {
     setName(name) {
-      setNewName(name);
+      setNewName(name)
     },
     setNumber(number) {
-      setNewNumber(number);
+      setNewNumber(number)
     }
   }
 
@@ -29,11 +29,14 @@ const App = () => {
       })
   }, [])
 
-  const reload = () => {phonebookService.getAll().then(data => {setPhonebook(data)})}
+  const reload = () => {setTimeout(() => {phonebookService.getAll().then(data => {setPhonebook(data)})}, 500)}
 
   const handleDelete = (person) => (() => {
     if(window.confirm(`Do you really want to delete ${person.name}`)){
-      phonebookService.remove(person.id).then(() => {reload(); setMessage({message:`Removed ${person.name}`, positive:true})}).catch(
+      phonebookService.remove(person._id).then(() => {
+        setPhonebook(phonebook.filter(current_person => (current_person._id !== person._id)))
+        reload() 
+        setMessage({message:`Removed ${person.name}`, positive:true})}).catch(
         setMessage({message:`Contact ${newName} has already been removed from the server`, positive:false})
       )
     }
@@ -43,23 +46,30 @@ const App = () => {
     event.preventDefault()
     if(phonebook.filter(person => person.name === newName).length === 0){
       phonebookService.create({name:newName,number:newNumber}).then(() => {
-        reload();
-        setMessage({message:`Added ${newName}`, positive:true}); 
-        setNewName(''); setNewNumber('')}).catch(
-          setMessage({message:`Server Error`, positive:false})
+        setPhonebook(phonebook.concat({name:newName,number:newNumber}))
+        reload()
+        setMessage({message:`Added ${newName}`, positive:true}) 
+        setNewName(''); setNewNumber('')}).catch((error) => {
+        setMessage({message:error.response.data.error, positive:false})}
       )
     } else {
       if(window.confirm(`Do you really want to change ${newName}'s number?`)){
-        phonebookService.update(phonebook.filter(person => person.name === newName)[0].id, {name:newName,number:newNumber}).then(
-          () => {reload(); setMessage({message:`Changed ${newName} number`, positive:true}); setNewName(''); setNewNumber('')}).catch(
-            setMessage({message:`Contact ${newName} has already been removed from the server`, positive:false})
-          )
+        let person = phonebook.filter(person => person.name === newName)[0]
+        phonebookService.update(person._id, {name:newName,number:newNumber}).then(
+          () => {
+            setPhonebook(phonebook.map(current_person => (current_person._id !== person._id?current_person:{name:newName,number:newNumber})))
+            reload() 
+            setMessage({message:`Changed ${newName}'s number`, positive:true}) 
+            setNewName('') 
+            setNewNumber('')}).catch(
+          setMessage({message:`Contact ${newName} has already been removed from the server`, positive:false})
+        )
       }
     }
   }
 
   const handleFormChange = (attribute) => (
-    (event) => {console.log(`set${attribute}`);stateFunctions[`set${attribute}`](event.target.value)}
+    (event) => {stateFunctions[`set${attribute}`](event.target.value)}
   )
 
   return (

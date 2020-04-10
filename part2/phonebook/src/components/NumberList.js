@@ -7,7 +7,7 @@ const NumberList = ({phonebook, searchString, handleDelete}) => (
     {phonebook.map(
       (person) => {
         if(person.name.toLowerCase().includes(searchString.toLowerCase())){
-          return(<Person key={person.id} person={person} handleDelete={handleDelete}/>)
+          return(<Person key={person._id} person={person} handleDelete={handleDelete}/>)
         } else {
           return(<></>)
         }
